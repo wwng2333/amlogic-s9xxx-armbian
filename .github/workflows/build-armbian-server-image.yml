@@ -186,6 +186,7 @@ on:
         default: "5.15.y_6.1.y"
         type: choice
         options:
+          - 5.10.234
           - 5.4.y
           - 5.10.y
           - 5.15.y
