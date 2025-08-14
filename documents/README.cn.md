@@ -425,9 +425,9 @@ armbian-update -k 6.1
 mkdir -p /usr/local/toolchain
 cd /usr/local/toolchain
 # 下载编译工具
-wget https://github.com/ophub/kernel/releases/download/dev/arm-gnu-toolchain-13.3.rel1-aarch64-aarch64-none-elf.tar.xz
+wget https://github.com/ophub/kernel/releases/download/dev/arm-gnu-toolchain-14.3.rel1-aarch64-aarch64-none-linux-gnu.tar.xz
 # 解压
-tar -Jxf arm-gnu-toolchain-13.3.rel1-aarch64-aarch64-none-elf.tar.xz
+tar -Jxf arm-gnu-toolchain-14.3.rel1-aarch64-aarch64-none-linux-gnu.tar.xz
 # 安装其他编译依赖包（可选项，可根据错误提示手动安装缺少项）
 armbian-kernel -u
 
@@ -438,7 +438,7 @@ cd ~/
 git clone https://github.com/jwrdegoede/rtl8189ES_linux
 cd rtl8189ES_linux
 # 设置编译环境
-gun_file="arm-gnu-toolchain-13.3.rel1-aarch64-aarch64-none-elf.tar.xz"
+gun_file="arm-gnu-toolchain-14.3.rel1-aarch64-aarch64-none-linux-gnu.tar.xz"
 toolchain_path="/usr/local/toolchain"
 toolchain_name="gcc"
 export CROSS_COMPILE="${toolchain_path}/${gun_file//.tar.xz/}/bin/aarch64-none-linux-gnu-"
@@ -920,21 +920,29 @@ ip -c -br address
 
 ##### 12.7.2.4 修改网络连接 MAC 地址
 
-在网络连接 `ether1` 上修改(克隆) `MAC 地址`并立即生效, 以解决局域网 MAC 地址冲突问题。
+在网络连接 `eth0` 上修改(克隆) `MAC 地址`并立即生效, 以解决局域网 MAC 地址冲突问题。
 
 *适用 有线连接 / 无线连接
 
 ```shell
-# Set ENV
-MYCON=ether1                  # 网络连接名称, 注意匹配网络接口类型
-MYTYPE=ethernet               # 网络接口类型 = 有线网卡 / 无线网卡 = ethernet / wifi
-MYMAC=12:34:56:78:9A:BC       # 新的 MAC 地址
+# 使用 nmcli connection show 命令查看网络连接名称
+nmcli connection show
+# 返回的结果中包含网口名字，例如'Wired connection 1'
+NAME                UUID                                  TYPE      DEVICE
+Wired connection 1  24d63dc7-c46f-3bf1-912f-1c33eb94338b  ethernet  eth0
+lo                  35ca24e5-bdc0-4658-8ac8-435ee22e07f3  loopback  lo
+Wired connection 2  59660b21-b460-30e0-8cb3-89b886556955  ethernet  --
 
-# Chg CON
-nmcli connection modify ${MYCON} \
-${MYTYPE}.cloned-mac-address ${MYMAC}
-nmcli connection up ${MYETH}
-ip -c -br address
+# 设置变量
+MYCON='Wired connection 1'    # 网络连接名称, 注意匹配网络接口类型
+MYTYPE='802-3-ethernet'       # 网络接口类型 = 有线网卡        / 无线网卡
+                              #            = 802-3-ethernet / 802-11-wireless
+MYMAC='12:34:56:78:9A:BC'     # 设置新的 MAC 地址
+
+# 执行修改
+nmcli connection modify "${MYCON}" ${MYTYPE}.cloned-mac-address ${MYMAC}
+nmcli connection up "${MYCON}"
+ip -c a show "${MYCON}"
 ```
 
 * 新建或修改部分网络参数, 网络连接可能会被断开, 并重新连接网络。
