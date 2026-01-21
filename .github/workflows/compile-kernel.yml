@@ -77,7 +77,7 @@ on:
         type: choice
         options:
           - -ophub
-          - -yourname
+          - -wwng
 
 env:
   TZ: Etc/UTC
